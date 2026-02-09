@@ -29,6 +29,18 @@ async def run():
     async with websockets.connect(SIGNALING_URL) as ws:
         print("Connected to signaling server")
 
+                # Create SDP offer (Raspberry Pi is the offerer)
+        offer = await pc.createOffer()
+        await pc.setLocalDescription(offer)
+
+        # Send offer to browser via signaling server
+        await ws.send(json.dumps({
+            "type": pc.localDescription.type,
+            "sdp": pc.localDescription.sdp
+        }))
+
+        print("Sent WebRTC offer")
+
         # Listen for messages from the operator webpage
         async for message in ws:
             data = json.loads(message)
