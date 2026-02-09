@@ -9,6 +9,17 @@ from aiortc import RTCPeerConnection, RTCSessionDescription
 # This object represents the Raspberry Pi in the WebRTC system
 pc = RTCPeerConnection()
 
+channel = pc.createDataChannel("test")
+
+@channel.on("open")
+def on_open():
+    print("DataChannel open!")
+    channel.send("Hello from Raspberry Pi")
+
+@channel.on("message")
+def on_message(message):
+    print("Received from browser:", message)
+
 # URL of your signaling server (Render)
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
 
