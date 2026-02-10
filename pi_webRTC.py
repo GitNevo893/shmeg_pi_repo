@@ -45,9 +45,17 @@ async def run():
         async for message in ws:
             data = json.loads(message)
 
-            # If we receive an SDP offer from the browser
-            if data["type"] == "offer":
-                print("Received WebRTC offer")
+        if data["type"] == "answer":
+            print("Received WebRTC answer")
+
+            await pc.setRemoteDescription(
+                RTCSessionDescription(
+                    sdp=data["sdp"],
+                    type=data["type"]
+                )
+            )
+
+            print("WebRTC peer connection established (SDP done)")
 
                 # Set the remote description (browser's offer)
                 await pc.setRemoteDescription(
