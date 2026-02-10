@@ -5,59 +5,43 @@ import websockets
 
 from aiortc import RTCPeerConnection, RTCSessionDescription
 
-# Create a WebRTC peer connection
-# This object represents the Raspberry Pi in the WebRTC system
+SIGNALING_URL = "wss://shmeg1repo.onrender.com"
+
 pc = RTCPeerConnection()
 
 channel = pc.createDataChannel("test")
 
 @channel.on("open")
 def on_open():
-    print("DataChannel open!")
+    print("✅ DataChannel open")
     channel.send("Hello from Raspberry Pi")
 
 @channel.on("message")
 def on_message(message):
-    print("Received from browser:", message)
-
-# URL of your signaling server (Render)
-SIGNALING_URL = "wss://shmeg1repo.onrender.com"
+    print("📩 From browser:", message)
 
 
 async def run():
-    # Connect to the signaling server
     async with websockets.connect(SIGNALING_URL) as ws:
-        print("Connected to signaling server")
+        print("✅ Connected to signaling server")
 
-                # Create SDP offer (Raspberry Pi is the offerer)
+        # Raspberry Pi is the OFFERER
         offer = await pc.createOffer()
         await pc.setLocalDescription(offer)
 
-        # Send offer to browser via signaling server
         await ws.send(json.dumps({
             "type": pc.localDescription.type,
             "sdp": pc.localDescription.sdp
         }))
 
-        print("Sent WebRTC offer")
+        print("📤 Sent WebRTC offer")
 
-        # Listen for messages from the operator webpage
         async for message in ws:
             data = json.loads(message)
 
-        if data["type"] == "answer":
-            print("Received WebRTC answer")
+            if data["type"] == "answer":
+                print("📥 Received WebRTC answer")
 
-            await pc.setRemoteDescription(
-                RTCSessionDescription(
-                    sdp=data["sdp"],
-                    type=data["type"]
-                )
-            )
-
-            print("WebRTC peer connection established (SDP done)")
-
-                # Set the remote description (browser's offer)
                 await pc.setRemoteDescription(
                     RTCSessionDescription(
                         sdp=data["sdp"],
@@ -65,21 +49,7 @@ async def run():
                     )
                 )
 
-                # Create an SDP answer
-                answer = await pc.createAnswer()
-
-                # Apply the answer locally
-                await pc.setLocalDescription(answer)
-
-                # Send the answer back to the browser via signaling server
-                await ws.send(json.dumps({
-                    "type": pc.localDescription.type,
-                    "sdp": pc.localDescription.sdp
-                }))
-
-                print("Sent WebRTC answer")
+                print("🎉 WebRTC peer connection established (SDP complete)")
 
 
-# Start the async system
 asyncio.run(run())
-
