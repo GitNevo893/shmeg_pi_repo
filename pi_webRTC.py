@@ -7,7 +7,13 @@ from aiortc import RTCPeerConnection, RTCSessionDescription
 
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
 
-pc = RTCPeerConnection()
+from aiortc import RTCConfiguration, RTCIceServer
+
+config = RTCConfiguration(
+    iceServers=[RTCIceServer(urls="stun:stun.l.google.com:19302")]
+)
+
+pc = RTCPeerConnection(configuration=config)
 
 channel = pc.createDataChannel("test")
 
@@ -48,8 +54,28 @@ async def run():
                         type=data["type"]
                     )
                 )
+            if data["type"] == "ice":
+                from aiortc import RTCIceCandidate
+                candidate = RTCIceCandidate(
+                    sdpMid=data["candidate"]["sdpMid"],
+                    sdpMLineIndex=data["candidate"]["sdpMLineIndex"],
+                    candidate=data["candidate"]["candidate"]
+                )
+                await pc.addIceCandidate(candidate)
 
                 print("🎉 WebRTC peer connection established (SDP complete)")
 
-
 asyncio.run(run())
+
+@pc.on("icecandidate")
+async def on_icecandidate(candidate):
+    if candidate:
+        await ws.send(json.dumps({
+            "type": "ice",
+            "candidate": {
+                "candidate": candidate.component,
+                "sdpMid": candidate.sdpMid,
+                "sdpMLineIndex": candidate.sdpMLineIndex
+            }
+        }))
+
