@@ -81,6 +81,15 @@ async def run():
                 )
 
             elif data["type"] == "ice":
-                await pc.addIceCandidate(data["candidate"])
+                from aiortc.sdp import candidate_from_sdp
+
+                candidate = candidate_from_sdp(
+                    data["candidate"]["candidate"]
+                )
+
+                candidate.sdpMid = data["candidate"]["sdpMid"]
+                candidate.sdpMLineIndex = data["candidate"]["sdpMLineIndex"]
+
+                await pc.addIceCandidate(candidate)
 
 asyncio.run(run())
