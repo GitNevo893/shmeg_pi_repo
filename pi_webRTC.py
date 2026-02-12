@@ -81,12 +81,6 @@ async def run():
                 )
 
             elif data["type"] == "ice":
-                candidate = RTCIceCandidate(
-                    sdpMid=data["candidate"]["sdpMid"],
-                    sdpMLineIndex=data["candidate"]["sdpMLineIndex"],
-                    candidate=data["candidate"]["candidate"],
-                )
-
-                await pc.addIceCandidate(candidate)
+                await pc.addIceCandidate(data["candidate"])
 
 asyncio.run(run())
