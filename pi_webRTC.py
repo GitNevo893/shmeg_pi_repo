@@ -81,12 +81,11 @@ async def run():
                 )
 
             elif data["type"] == "ice":
-                from aiortc.rtcicetransport import candidate_from_sdp
-
-                candidate = candidate_from_sdp(data["candidate"]["candidate"])
-
-                candidate.sdpMid = data["candidate"]["sdpMid"]
-                candidate.sdpMLineIndex = data["candidate"]["sdpMLineIndex"]
+                candidate = RTCIceCandidate(
+                    sdpMid=data["candidate"]["sdpMid"],
+                    sdpMLineIndex=data["candidate"]["sdpMLineIndex"],
+                    candidate=data["candidate"]["candidate"],
+                )
 
                 await pc.addIceCandidate(candidate)
 
