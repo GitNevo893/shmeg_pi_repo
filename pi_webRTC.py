@@ -26,24 +26,25 @@ config = RTCConfiguration(
 
 pc = RTCPeerConnection(configuration=config)
 
-channel = pc.createDataChannel("test")
+from aiortc.contrib.media import MediaPlayer
 
+player = MediaPlayer('default', format='alsa')
+pc.addTrack(player.audio)
+
+channel = pc.createDataChannel("test")
 
 @channel.on("open")
 def on_open():
     print("✅ DataChannel open")
     channel.send("Hello from Raspberry Pi")
 
-
 @channel.on("message")
 def on_message(message):
     print("📩 From browser:", message)
 
-
 @pc.on("connectionstatechange")
 async def on_connectionstatechange():
     print("Connection state:", pc.connectionState)
-
 
 async def run():
     async with websockets.connect(SIGNALING_URL) as ws:
