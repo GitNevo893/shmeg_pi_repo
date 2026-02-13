@@ -10,7 +10,8 @@ from aiortc import (
     RTCIceServer,
     RTCIceCandidate
 )
-
+from aiortc.contrib.media import MediaRecorder
+from aiortc.contrib.media import MediaPlayer
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
 
 config = RTCConfiguration(
@@ -25,8 +26,6 @@ config = RTCConfiguration(
 )
 
 pc = RTCPeerConnection(configuration=config)
-
-from aiortc.contrib.media import MediaPlayer
 
 player = MediaPlayer('default', format='alsa')
 pc.addTrack(player.audio)
@@ -99,5 +98,14 @@ async def run():
                 candidate.sdpMLineIndex = data["candidate"]["sdpMLineIndex"]
 
                 await pc.addIceCandidate(candidate)
+            
+
+        recorder = MediaRecorder('default', format='alsa')
+
+        @pc.on("track")
+        async def on_track(track):
+            print("🎵 Audio received from browser")
+            await recorder.addTrack(track)
+            await recorder.start()
 
 asyncio.run(run())
