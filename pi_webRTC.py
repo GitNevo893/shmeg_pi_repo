@@ -34,12 +34,12 @@ channel = pc.createDataChannel("test")
 
 @channel.on("open")
 def on_open():
-    print("✅ DataChannel open")
+    print("DataChannel open!!!")
     channel.send("Hello from Raspberry Pi")
 
 @channel.on("message")
 def on_message(message):
-    print("📩 From browser:", message)
+    print("From browser:", message)
 
 @pc.on("connectionstatechange")
 async def on_connectionstatechange():
@@ -47,7 +47,7 @@ async def on_connectionstatechange():
 
 async def run():
     async with websockets.connect(SIGNALING_URL) as ws:
-        print("✅ Connected to signaling server")
+        print("Connected to signaling server")
 
         # ICE handler MUST be inside run (so ws exists)
         @pc.on("icecandidate")
@@ -71,14 +71,14 @@ async def run():
             "sdp": pc.localDescription.sdp
         }))
 
-        print("📤 Sent WebRTC offer")
+        print("Sent WebRTC offer")
 
         # 2️⃣ Listen for messages
         async for message in ws:
             data = json.loads(message)
 
             if data["type"] == "answer":
-                print("📥 Received WebRTC answer")
+                print("Received WebRTC answer")
 
                 await pc.setRemoteDescription(
                     RTCSessionDescription(
@@ -104,7 +104,7 @@ async def run():
 
         @pc.on("track")
         async def on_track(track):
-            print("🎵 Audio received from browser")
+            print("Audio received from browser")
             await recorder.addTrack(track)
             await recorder.start()
 
