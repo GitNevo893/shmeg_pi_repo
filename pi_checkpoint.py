@@ -3,11 +3,33 @@ import asyncio
 import json
 import websockets
 
-from aiortc import RTCPeerConnection, RTCSessionDescription
+from aiortc import (
+    RTCPeerConnection,
+    RTCSessionDescription,
+    RTCConfiguration,
+    RTCIceServer,
+    RTCIceCandidate
+)
 
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
 
-pc = RTCPeerConnection()
+config = RTCConfiguration(
+    iceServers=[
+        RTCIceServer(urls="stun:stun.l.google.com:19302"),
+        RTCIceServer(
+            urls="turn:openrelay.metered.ca:443?transport=tcp",
+            username="openrelayproject",
+            credential="openrelayproject"
+        )
+    ]
+)
+
+pc = RTCPeerConnection(configuration=config)
+
+from aiortc.contrib.media import MediaPlayer
+
+player = MediaPlayer('default', format='alsa')
+pc.addTrack(player.audio)
 
 channel = pc.createDataChannel("test")
 
@@ -20,12 +42,28 @@ def on_open():
 def on_message(message):
     print("📩 From browser:", message)
 
+@pc.on("connectionstatechange")
+async def on_connectionstatechange():
+    print("Connection state:", pc.connectionState)
 
 async def run():
     async with websockets.connect(SIGNALING_URL) as ws:
         print("✅ Connected to signaling server")
 
-        # Raspberry Pi is the OFFERER
+        # ICE handler MUST be inside run (so ws exists)
+        @pc.on("icecandidate")
+        async def on_icecandidate(candidate):
+            if candidate:
+                await ws.send(json.dumps({
+                    "type": "ice",
+                    "candidate": {
+                        "candidate": candidate.to_sdp(),
+                        "sdpMid": candidate.sdpMid,
+                        "sdpMLineIndex": candidate.sdpMLineIndex
+                    }
+                }))
+
+        # 1️⃣ Create offer
         offer = await pc.createOffer()
         await pc.setLocalDescription(offer)
 
@@ -36,6 +74,7 @@ async def run():
 
         print("📤 Sent WebRTC offer")
 
+        # 2️⃣ Listen for messages
         async for message in ws:
             data = json.loads(message)
 
@@ -49,7 +88,16 @@ async def run():
                     )
                 )
 
-                print("🎉 WebRTC peer connection established (SDP complete)")
+            elif data["type"] == "ice":
+                from aiortc.sdp import candidate_from_sdp
 
+                candidate = candidate_from_sdp(
+                    data["candidate"]["candidate"]
+                )
+
+                candidate.sdpMid = data["candidate"]["sdpMid"]
+                candidate.sdpMLineIndex = data["candidate"]["sdpMLineIndex"]
+
+                await pc.addIceCandidate(candidate)
 
 asyncio.run(run())
