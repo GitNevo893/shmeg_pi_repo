@@ -27,7 +27,7 @@ config = RTCConfiguration(
 
 pc = RTCPeerConnection(configuration=config)
 
-player = MediaPlayer('default', format='alsa')
+player = MediaPlayer('hw:1,0', format='alsa')
 pc.addTrack(player.audio)
 
 channel = pc.createDataChannel("test")
