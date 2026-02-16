@@ -27,7 +27,7 @@ config = RTCConfiguration(
 
 pc = RTCPeerConnection(configuration=config)
 
-player = MediaPlayer('hw:1,0', format='alsa')
+player = MediaPlayer('plughw:2,0', format='alsa')
 pc.addTrack(player.audio)
 
 channel = pc.createDataChannel("test")
@@ -44,6 +44,12 @@ def on_message(message):
 @pc.on("connectionstatechange")
 async def on_connectionstatechange():
     print("Connection state:", pc.connectionState)
+
+ @pc.on("track")
+        async def on_track(track):
+            print("Audio received from browser")
+            await recorder.addTrack(track)
+            await recorder.start()
 
 async def run():
     async with websockets.connect(SIGNALING_URL) as ws:
@@ -101,11 +107,5 @@ async def run():
             
 
         recorder = MediaRecorder('default', format='alsa')
-
-        @pc.on("track")
-        async def on_track(track):
-            print("Audio received from browser")
-            await recorder.addTrack(track)
-            await recorder.start()
 
 asyncio.run(run())
