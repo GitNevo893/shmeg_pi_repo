@@ -27,11 +27,11 @@ config = RTCConfiguration(
 
 pc = RTCPeerConnection(configuration=config)
 
-player = MediaPlayer('plughw:2,0', format='alsa')
+player = MediaPlayer('sysdefault:CARD=Device', format='alsa')
 print("Audio source:", player.audio)
 pc.addTrack(player.audio)
 
-recorder = MediaRecorder('default', format='alsa')
+recorder = MediaRecorder('sysdefault:CARD=Device', format='alsa')
 
 @pc.on("track")
 async def on_track(track):
@@ -107,8 +107,5 @@ async def run():
                 candidate.sdpMLineIndex = data["candidate"]["sdpMLineIndex"]
 
                 await pc.addIceCandidate(candidate)
-            
-
-        recorder = MediaRecorder('default', format='alsa')
 
 asyncio.run(run())
