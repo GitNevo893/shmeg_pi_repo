@@ -36,7 +36,7 @@ recorder = MediaRecorder('default', format='alsa')
 @pc.on("track")
 async def on_track(track):
     print("Audio received from browser")
-    await recorder.addTrack(track)
+    recorder.addTrack(track)
     await recorder.start()
 
 channel = pc.createDataChannel("test")
