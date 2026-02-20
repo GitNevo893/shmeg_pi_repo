@@ -35,7 +35,9 @@ recorder = MediaRecorder('sysdefault:CARD=Device', format='alsa')
 
 @pc.on("track")
 async def on_track(track):
-    print("Audio received from browser")
+    if track.kind != "audio":
+        return
+    print("🎵 Audio received from browser")
     recorder.addTrack(track)
     await recorder.start()
 
