@@ -16,7 +16,7 @@ from aiortc.contrib.media import MediaPlayer, MediaRecorder
 from aiortc.sdp import candidate_from_sdp
 
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
-AUDIO_DEVICE = "sysdefault:CARD=Device"
+AUDIO_DEVICE = "plughw:CARD=Device,DEV=0"
 
 # STUN/TURN config for NAT traversal.
 config = RTCConfiguration(
