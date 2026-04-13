@@ -44,16 +44,16 @@ try:
     else:
         print("Audio source opened but no audio track was provided by ALSA")
 except Exception as exc:
-    print(f"Audio input unavailable on {AUDIO_DEVICE}: {exc}")
+    print(f"Audio input unavailable on {MIC_DEVICE}: {exc}")
 
 # Audio output (browser -> Pi): create recorder once.
 # If output hardware is missing, keep the app running and just skip playback.
 recorder = None
 try:
     recorder = MediaRecorder(SPK_DEVICE, format="alsa")
-    print(f"Audio output prepared on {AUDIO_DEVICE}")
+    print(f"Audio output prepared on {SPK_DEVICE}")
 except Exception as exc:
-    print(f"Audio output unavailable on {AUDIO_DEVICE}: {exc}")
+    print(f"Audio output unavailable on {SPK_DEVICE}: {exc}")
 
 recording_started = False
 
