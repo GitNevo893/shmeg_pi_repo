@@ -16,7 +16,8 @@ from aiortc.contrib.media import MediaPlayer, MediaRecorder
 from aiortc.sdp import candidate_from_sdp
 
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
-AUDIO_DEVICE = "plughw:CARD=UACDemoV10,DEV=0"
+MIC_DEVICE = "plughw:CARD=Device,DEV=0"
+SPK_DEVICE = "default:CARD=UACDemoV10"
 
 # STUN/TURN config for NAT traversal.
 config = RTCConfiguration(
@@ -36,7 +37,7 @@ pc = RTCPeerConnection(configuration=config)
 # If the USB/input device is missing, log and continue without crashing.
 player = None
 try:
-    player = MediaPlayer(AUDIO_DEVICE, format="alsa")
+    player = MediaPlayer(MIC_DEVICE, format="alsa")
     if player.audio is not None:
         print("Audio source ready:", player.audio)
         pc.addTrack(player.audio)
@@ -49,7 +50,7 @@ except Exception as exc:
 # If output hardware is missing, keep the app running and just skip playback.
 recorder = None
 try:
-    recorder = MediaRecorder(AUDIO_DEVICE, format="alsa")
+    recorder = MediaRecorder(SPK_DEVICE, format="alsa")
     print(f"Audio output prepared on {AUDIO_DEVICE}")
 except Exception as exc:
     print(f"Audio output unavailable on {AUDIO_DEVICE}: {exc}")
