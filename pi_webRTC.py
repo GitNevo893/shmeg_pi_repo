@@ -95,8 +95,10 @@ def on_open():
 
 @channel.on("message")
 def on_message(message):
+    if message == "ping":
+        channel.send("pong")
+        return
     print("From browser:", message)
-
 
 @pc.on("connectionstatechange")
 async def on_connectionstatechange():
@@ -151,6 +153,9 @@ async def run():
         async for message in ws:
             data = json.loads(message)
             msg_type = data.get("type")
+
+            if msg_type == "ping":
+                continue
 
             if msg_type == "answer":
                 print("Received WebRTC answer")
