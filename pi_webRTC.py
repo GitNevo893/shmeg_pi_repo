@@ -37,7 +37,7 @@ pc = RTCPeerConnection(configuration=config)
 # If the USB/input device is missing, log and continue without crashing.
 player = None
 try:
-    player = MediaPlayer(MIC_DEVICE, format="alsa")
+    player = MediaPlayer(MIC_DEVICE, format="alsa", options={"channels": "1", "sample_rate": "48000"})
     if player.audio is not None:
         print("Audio source ready:", player.audio)
         pc.addTrack(player.audio)
