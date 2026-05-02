@@ -60,7 +60,7 @@ async def on_track(track):
 
     if track.kind != "audio":
         return
-    print("🎵 Audio track received from browser")
+    print("Audio track received from browser")
     
     # Start recorder only once (prevents duplicate starts / state errors).
     if recording_started:
