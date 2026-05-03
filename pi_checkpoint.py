@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-#Raspberry Pi WebRTC peer (offerer).
-#This script keeps signaling simple (WebSocket JSON) and focuses on reliable 2-way audio behavior with aiortc 1.14.0.
 
 import asyncio
 import json
@@ -17,7 +15,6 @@ SIGNALING_URL = "wss://shmeg1repo.onrender.com"
 MIC_DEVICE = "plughw:CARD=Device,DEV=0"
 SPK_DEVICE = "default:CARD=UACDemoV10"
 
-# STUN/TURN config for NAT traversal.
 config = RTCConfiguration(
     iceServers=[
         RTCIceServer(urls="stun:stun.l.google.com:19302"),
@@ -30,8 +27,6 @@ config = RTCConfiguration(
 )
 pc = RTCPeerConnection(configuration=config)
 
-# Audio input (Pi -> browser): use a stable ALSA device name.
-# If the USB/input device is missing, log and continue without crashing.
 player = None
 try:
     player = MediaPlayer(MIC_DEVICE, format="alsa", options={"channels": "1", "sample_rate": "48000"})
@@ -43,8 +38,6 @@ try:
 except Exception as exc:
     print(f"Audio input unavailable on {MIC_DEVICE}: {exc}")
 
-# Audio output (browser -> Pi): create recorder once.
-# If output hardware is missing, keep the app running and just skip playback.
 recorder = None
 try:
     recorder = MediaRecorder(SPK_DEVICE, format="alsa")
@@ -62,7 +55,6 @@ async def on_track(track):
         return
     print("Audio track received from browser")
     
-    # Start recorder only once (prevents duplicate starts / state errors).
     if recording_started:
         print("Recorder already started; ignoring duplicate audio track")
         return
@@ -76,7 +68,6 @@ async def on_track(track):
     await recorder.start()
     print("Audio playback started")
 
-# Keep the required test data channel for debugging/health checks.
 channel = pc.createDataChannel("test")
 
 @channel.on("open")
@@ -102,8 +93,7 @@ async def on_iceconnectionstatechange():
 async def run():
     async with websockets.connect(SIGNALING_URL) as ws:
         print("Connected to signaling server")
-
-        # ICE sender lives inside run() so it has access to this ws connection.
+        
         @pc.on("icecandidate")
         async def on_icecandidate(candidate):
             if candidate is None:
@@ -123,7 +113,6 @@ async def run():
                     }
                 )
             )
-        # Pi stays as OFFERER: createOffer -> setLocalDescription -> send offer.
         offer = await pc.createOffer()
         await pc.setLocalDescription(offer)
         await ws.send(
@@ -136,7 +125,6 @@ async def run():
         )
         print("Sent WebRTC offer")
         
-        # Main signaling loop.
         async for message in ws:
             data = json.loads(message)
             msg_type = data.get("type")
