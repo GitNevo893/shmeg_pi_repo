@@ -14,7 +14,7 @@ from aiortc import (
 from aiortc.contrib.media import MediaPlayer, MediaRecorder
 from aiortc.sdp import candidate_from_sdp
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
-MIC_DEVICE = "plughw:CARD=Device,DEV=0"
+MIC_DEVICE = "plughw:CARD=USB PnP Sound Device"
 SPK_DEVICE = "default:CARD=UACDemoV10"
 
 # STUN/TURN config for NAT traversal.
@@ -34,7 +34,7 @@ pc = RTCPeerConnection(configuration=config)
 # If the USB/input device is missing, log and continue without crashing.
 player = None
 try:
-    player = MediaPlayer("/home/hugim/shmeg_pi_repo/test.wav")
+    player = MediaPlayer(MIC_DEVICE, format="alsa", options={"channels": "1", "sample_rate": "48000"})
     if player.audio is not None:
         print("Audio source ready:", player.audio)
         pc.addTrack(player.audio)
