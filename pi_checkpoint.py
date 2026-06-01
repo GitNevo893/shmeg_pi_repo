@@ -14,7 +14,7 @@ from aiortc import (
 from aiortc.contrib.media import MediaPlayer, MediaRecorder
 from aiortc.sdp import candidate_from_sdp
 SIGNALING_URL = "wss://shmeg1repo.onrender.com"
-MIC_DEVICE = "plughw:CARD=USB PnP Sound Device"
+MIC_DEVICE = "plughw:CARD=Device,DEV=0"
 SPK_DEVICE = "default:CARD=UACDemoV10"
 
 # STUN/TURN config for NAT traversal.
